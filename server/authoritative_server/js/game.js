@@ -65,11 +65,13 @@ function preload() {
   this.load.spritesheet('blue_move_right','assets/blue_wheel_right.png', { frameWidth: 301, frameHeight: 301 })
   this.load.spritesheet('purple_move_right','assets/purple_wheel_right1.png', { frameWidth: 301, frameHeight: 301 })
   this.load.spritesheet('yellow_move_right','assets/yellow_wheel_right1.png', { frameWidth: 301, frameHeight: 301 })
-      
+  this.load.image('white_move_right','assets/white_wheel_right.png')
+  
   // tank barrel
   this.load.image('blue_barrel', 'assets/blue_barrel.png')
   this.load.image('purple_barrel', 'assets/purple_barrel.png')
   this.load.image('yellow_barrel', 'assets/yellow_barrel.png')
+  this.load.image('white_barrel', 'assets/white_barrel.png')
 
   // trail
   this.load.image('blue_trail', 'assets/cyan_blur.png')
@@ -85,6 +87,7 @@ function preload() {
   this.load.image('blue_tank', 'assets/base-cyan.png');
   this.load.image('purple_tank', 'assets/base-magenta.png')
   this.load.image('yellow_tank', 'assets/base-yellow.png')
+  this.load.image('white_tank', 'assets/base-white.png')
   
   // lowhealth tank
   this.load.image('lowhealth-blue', 'assets/lowhealth_cyan.png')
@@ -133,6 +136,8 @@ function create() {
   this.balls2 = this.physics.add.group();
   this.balls3 = this.physics.add.group();
 
+  this.gameStarted = false
+
   this.pipRefId = 0
 
   if (this.pips.getLength() < 8) {
@@ -178,7 +183,7 @@ function create() {
     players[player.playerId].ammo += 1
     io.emit('shinyPipReplace', {x: self.shinyPip.x, y: self.shinyPip.y})
     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
-    io.to(player.playerId).emit('shinyPipSound')
+    io.to(player.playerId).emit('pipSound')
   })
 
 // super pips
@@ -331,10 +336,13 @@ function create() {
     if (players[player.playerId].playerId != balls1[ball1.playerId].playerId) {
       players[player.playerId].health -= 25
       players[player.playerId].scale -= 0.015
+      players[player.playerId].alpha -= 0.5
       ball1.disableBody()
       ball1.enableBody(true, players[ball1.playerId].x, players[ball1.playerId].y).setGravity(0, -200)
       ball1.active = false
+      io.emit('damaged', players[player.playerId].playerId)
       io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
+      io.to(ball1.playerId).emit('pipSound')
     }
   })
 
@@ -392,6 +400,7 @@ function create() {
       rotation: 0,
       x: Math.floor(Math.random() * 1100) + 100,
       y: 660,
+      alpha: 1,
       mouseX: 0,
       mouseY: 0,
       tankColor: '',
@@ -507,7 +516,14 @@ function create() {
       handlePlayerInput(self, socket.id, inputData);
     });
 
+    socket.on('gameStart', function () {
+      io.emit('gameBegin')
+      self.gameStarted = true
+    }) 
+
   });
+
+  this.tempStart = 0
 
   const playerIcon = self.add.sprite(1170, 770, this.tempSprite1).setScale(0.15).setDepth(3);
   const ammoIcon = self.add.sprite(50, 28, this.tempSprite2).setDepth(3)
@@ -665,10 +681,10 @@ function update() {
     var touchingCeil = player.body.touching.up
 
     const input = players[player.playerId].input;
-    if (input.left) {
+    if (this.gameStarted == true && input.left) {
       player.setVelocityX(-players[player.playerId].speed);
       player.flipX = true;
-    } else if (input.right) {
+    } else if (this.gameStarted == true && input.right) {
       player.setVelocityX(players[player.playerId].speed);
       player.flipX = false;
     } else {
@@ -679,7 +695,7 @@ function update() {
       players[player.playerId].gravityCounter += 5
     }
 
-    if (input.up && input.gravDown && players[player.playerId].gravityCounter < 6) {
+    if (this.gameStarted == true && input.up && input.gravDown && players[player.playerId].gravityCounter < 6) {
       player.setGravityY(-650)
       if (!touchingFloor && !touchingCeil && !player.flipY) {
         players[player.playerId].gravityCounter++
@@ -692,7 +708,7 @@ function update() {
       }
       player.flipY = true
     } 
-    else if (input.down && input.gravDown && players[player.playerId].gravityCounter < 6) {
+    else if (this.gameStarted == true && input.down && input.gravDown && players[player.playerId].gravityCounter < 6) {
       player.setGravityY(650)
       if (!touchingFloor && !touchingCeil && player.flipY) {
         players[player.playerId].gravityCounter++
@@ -713,12 +729,11 @@ function update() {
       players[player.playerId].gravityCounter = 0
     }
     player.setScale(players[player.playerId].scale)
+    players[player.playerId].alpha = player.alpha
     players[player.playerId].x = player.x;
     players[player.playerId].y = player.y;
     players[player.playerId].flipX = player.flipX;
     players[player.playerId].flipY = player.flipY;
-    players[player.playerId].mouseX = input.mouseX;
-    players[player.playerId].mouseY = input.mouseY;
     players[player.playerId].rotation = player.rotation;
 
   });
@@ -742,8 +757,9 @@ function update() {
     } else {
       barrel.setAcceleration(0);
     }
-
-    barrels[barrel.playerId].rotation = Phaser.Math.Angle.Between(barrel.x,barrel.y,input.mouseX,input.mouseY) + Math.PI/2
+    if (this.gameStarted == true) {
+      barrels[barrel.playerId].rotation = Phaser.Math.Angle.Between(barrel.x,barrel.y,input.mouseX,input.mouseY) + Math.PI/2
+    }
     barrels[barrel.playerId].scale = players[barrel.playerId].scale
     barrels[barrel.playerId].x = players[barrel.playerId].x
     barrels[barrel.playerId].y = players[barrel.playerId].y
@@ -788,7 +804,7 @@ function update() {
 
     const input = balls1[ball1.playerId].input;
     
-    if (input.mouseButton && !ball1.active && players[ball1.playerId].ammo > 0) {
+    if (this.gameStarted == true && input.mouseButton && !ball1.active && players[ball1.playerId].ammo > 0) {
       ball1.enableBody()
       ball1.setGravityY(300)
       this.physics.moveTo(ball1, input.mouseX, input.mouseY, players[ball1.playerId].shotSpeed)

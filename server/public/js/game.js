@@ -58,11 +58,13 @@ function preload() {
   this.load.spritesheet('blue_move_right','assets/blue_wheel_right.png', { frameWidth: 301, frameHeight: 301 })
   this.load.spritesheet('purple_move_right','assets/purple_wheel_right1.png', { frameWidth: 301, frameHeight: 301 })
   this.load.spritesheet('yellow_move_right','assets/yellow_wheel_right1.png', { frameWidth: 301, frameHeight: 301 })
-        
+  this.load.image('white_move_right','assets/white_wheel_right.png')
+
   // tank barrel
   this.load.image('blue_barrel', 'assets/blue_barrel.png')
   this.load.image('purple_barrel', 'assets/purple_barrel.png')
   this.load.image('yellow_barrel', 'assets/yellow_barrel.png')
+  this.load.image('white_barrel', 'assets/white_barrel.png')
 
   // trail
   this.load.image('blue_trail', 'assets/cyan_blur.png')
@@ -78,6 +80,7 @@ function preload() {
   this.load.image('blue_tank', 'assets/base-cyan.png')
   this.load.image('purple_tank', 'assets/base-magenta.png')
   this.load.image('yellow_tank', 'assets/base-yellow.png')
+  this.load.image('white_tank', 'assets/base-white.png')
 
   // lowhealth tank
   this.load.image('lowhealth-blue', 'assets/lowhealth_cyan.png')
@@ -126,6 +129,11 @@ function create() {
   this.balls1 = this.add.group();
   this.balls2 = this.add.group();
   this.balls3 = this.add.group();
+
+  this.gameStarted = false
+
+  this.c1 = Phaser.Display.Color.HexStringToColor('#ffffff');
+  this.c2 = Phaser.Display.Color.HexStringToColor('#ff0000');
 
   this.playerIcon
   this.ammoIcon
@@ -253,6 +261,7 @@ function create() {
           player.setRotation(players[id].rotation);
           player.setPosition(players[id].x, players[id].y);
           player.setScale(players[id].scale);
+          player.setAlpha(players[id].alpha);
           player.mouseX = players[id].mouseX;
           player.mouseY = players[id].mouseY;
           player.flipX = players[id].flipX;
@@ -602,6 +611,12 @@ function create() {
 
   this.timer = 3
   this.returnTimer = 0
+  this.socket.on('gameBegin', function () {
+    self.lobbyScreen.visible = false
+    self.waitingLobbyText.visible = false
+    self.gameStarted = true
+  })
+
 }
 
 function update() { 
@@ -613,14 +628,19 @@ function update() {
       this.lobbyScreen.visible = false
       this.waitingLobbyText.text = ''
       this.returnTimer++
+      this.gameBegin = true
     }
   } 
   else if (this.returnTimer == 0) {
     this.timer = 3
     this.lobbyScreen.visible = true
-    this.startingLobbyText.text = ''
     this.waitingLobbyText.text = this.players.getLength() + ' player(s) ready. Waiting for more...'
   }
+  if (this.gameBegin == true) {
+    this.socket.emit('gameStart')
+  }
+
+
 
   if(this.scrollClouds.x > 800){
     this.scrollRate = -0.15
@@ -691,9 +711,9 @@ function update() {
 }
 
 function displayPlayers(self, playerInfo, sprite1, sprite2, sprite3, ballColor, trailColor, color) {
-  const player = self.add.sprite(playerInfo.x, playerInfo.y, sprite1).setScale(0.175).setSize(301, 301, true).setDepth(3);
-  const barrel = self.add.sprite(playerInfo.x, playerInfo.y, sprite2).setScale(0.175).setSize(301, 301, true).setDepth(2);
-  const wheel = self.add.sprite(playerInfo.x, playerInfo.y, sprite3).setScale(0.175).setSize(301, 301, true).setDepth(2);
+  const player = self.add.sprite(playerInfo.x, playerInfo.y, sprite1).setScale(0.175).setSize(301, 301, true).setDepth(3).setAlpha(1);
+  const barrel = self.add.sprite(playerInfo.x, playerInfo.y, sprite2).setScale(0.175).setSize(301, 301, true).setDepth(2).setAlpha(1);
+  const wheel = self.add.sprite(playerInfo.x, playerInfo.y, sprite3).setScale(0.175).setSize(301, 301, true).setDepth(2).setAlpha(1);
   const trail = self.add.particles(trailColor)
   const ball1 = self.add.sprite(playerInfo.x, playerInfo.y, ballColor)
 
