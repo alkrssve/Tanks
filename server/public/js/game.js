@@ -627,7 +627,7 @@ function create() {
 
 function update() { 
 
-  if (this.players.getLength() > 1 && this.returnTimer == 0) {
+  if (this.players.getLength() > 3 && this.returnTimer == 0) {
     this.timer -= 0.02
     this.waitingLobbyText.text = 'Game starting in... ' + this.timer.toFixed(1)
     if (this.timer < 0) {
