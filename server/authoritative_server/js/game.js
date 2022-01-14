@@ -663,14 +663,14 @@ function update() {
   //   }
   // }
 
-  if (this.time.now > 190000) {
-    this.players.getChildren().forEach((player) => {
-      players[player.playerId].health -= 0.05
-      players[player.playerId].scale -= 0.00003
-      players[player.playerId].speed += 0.02
-      io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
-    })
-  }
+  // if (this.time.now > 190000) {
+  //   this.players.getChildren().forEach((player) => {
+  //     players[player.playerId].health -= 0.05
+  //     players[player.playerId].scale -= 0.00003
+  //     players[player.playerId].speed += 0.02
+  //     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
+  //   })
+  // }
 
   if (this.pips.getLength() < 8) {
 
