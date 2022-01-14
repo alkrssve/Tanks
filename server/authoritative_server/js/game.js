@@ -524,6 +524,8 @@ function create() {
     socket.on('gameEnd', function () {
       io.emit('gameRestart')
       self.gameStarted = false
+      self.time.now = 0
+      self.resetPlatforms()
     })
 
   });
@@ -536,7 +538,6 @@ function create() {
 }
 
 function update() {
-
 
   this.players.getChildren().forEach((player) => {
 
@@ -562,105 +563,105 @@ function update() {
 
   })
 
-  // timer temps
-  var i = 0
-  var j = 0
-  var k = 0
+  // // timer temps
+  // var i = 0
+  // var j = 0
+  // var k = 0
 
-  var a = 0
+  // var a = 0
 
-  if (this.time.now > 20000 && this.centerPlatform.alpha > 0) {
-    if (i == 0) {
-      io.emit('centerPlatformFade', this.centerPlatform)
-      i++
-    }
-    if(this.time.now > 20750) {
-      if (i == 1) {
-        io.emit('centerPlatformDestroy', this.centerPlatform)
-        this.centerPlatform.destroy()
-        i++
-      }
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 20000 && this.centerPlatform.alpha > 0) {
+  //   if (i == 0) {
+  //     io.emit('centerPlatformFade', this.centerPlatform)
+  //     i++
+  //   }
+  //   if(this.time.now > 20750) {
+  //     if (i == 1) {
+  //       io.emit('centerPlatformDestroy', this.centerPlatform)
+  //       this.centerPlatform.disableBody()
+  //       i++
+  //     }
+  //   }
+  // }
 
-  if (this.time.now > 123000) {
-    if (a == 0) {
-      io.emit('dangerScreenPlay', this.dangerScreen)
-      a++
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 123000) {
+  //   if (a == 0) {
+  //     io.emit('dangerScreenPlay', this.dangerScreen)
+  //     a++
+  //   }
+  // }
 
-  if (this.time.now > 124000) {
-    if (a == 1) {
-      io.emit('dangerScreenStop', this.dangerScreen)
-      a++ 
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 124000) {
+  //   if (a == 1) {
+  //     io.emit('dangerScreenStop', this.dangerScreen)
+  //     a++ 
+  //   }
+  // }
 
-  if (this.time.now > 125000 && this.ceiling.y > 0) {
-    if (j == 0) {
-      io.emit('ceilingFall', this.ceiling)
-      j++
-    }
-    this.ceiling.setGravityY(-205)
-    if (this.time.now > 128000) {
-      if (j == 1) {
-        io.emit('ceilingDisappear', this.ceiling)
-        this.ceiling.setGravityY(-700)
-        j++
-      }
-      if (this.time.now > 130000) {
-        if (j == 2) {
-          io.emit('ceilingDestroy', this.ceiling)
-          this.ceiling.destroy()
-          k++
-        }
-      }
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 125000 && this.ceiling.y > 0) {
+  //   if (j == 0) {
+  //     io.emit('ceilingFall', this.ceiling)
+  //     j++
+  //   }
+  //   this.ceiling.setGravityY(-205)
+  //   if (this.time.now > 128000) {
+  //     if (j == 1) {
+  //       io.emit('ceilingDisappear', this.ceiling)
+  //       this.ceiling.setGravityY(-700)
+  //       j++
+  //     }
+  //     if (this.time.now > 130000) {
+  //       if (j == 2) {
+  //         io.emit('ceilingDestroy', this.ceiling)
+  //         this.ceiling.disableBody()
+  //         k++
+  //       }
+  //     }
+  //   }
+  // }
 
-  if (this.time.now > 183000) {
-    if (a == 2) {
-      io.emit('dangerScreenPlay', this.dangerScreen)
-      a++
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 183000) {
+  //   if (a == 2) {
+  //     io.emit('dangerScreenPlay', this.dangerScreen)
+  //     a++
+  //   }
+  // }
 
-  if (this.time.now > 184000) {
-    if (a == 3) {
-      io.emit('dangerScreenStop', this.dangerScreen)
-      a++ 
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 184000) {
+  //   if (a == 3) {
+  //     io.emit('dangerScreenStop', this.dangerScreen)
+  //     a++ 
+  //   }
+  // }
 
-  if (this.time.now > 185000 && this.floor.y < 800) {
-    if (k == 0) {
-      io.emit('floorFall', this.floor)
-      k++
-    }
-    this.floor.setGravityY(-195)
-    if (this.time.now > 188000) {
-      if (k == 1) {
-        io.emit('floorDisappear', this.floor)
-        this.floor.setGravityY(500)
-        k++
-      }
-      if (this.time.now > 190000) {
-        if (k == 2) {
-          io.emit('floorDestroy', this.floor)
-          this.floor.destroy()
-          k++
-        }
-      }
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 185000 && this.floor.y < 800) {
+  //   if (k == 0) {
+  //     io.emit('floorFall', this.floor)
+  //     k++
+  //   }
+  //   this.floor.setGravityY(-195)
+  //   if (this.time.now > 188000) {
+  //     if (k == 1) {
+  //       io.emit('floorDisappear', this.floor)
+  //       this.floor.setGravityY(500)
+  //       k++
+  //     }
+  //     if (this.time.now > 190000) {
+  //       if (k == 2) {
+  //         io.emit('floorDestroy', this.floor)
+  //         this.floor.disableBody()
+  //         k++
+  //       }
+  //     }
+  //   }
+  // }
 
-  if (this.time.now > 190000) {
-    if (a == 4) {
-      io.emit('dangerScreenDisable', this.dangerScreen)
-      a++ 
-    }
-  }
+  // if (this.gameStarted == true && this.time.now > 190000) {
+  //   if (a == 4) {
+  //     io.emit('dangerScreenDisable', this.dangerScreen)
+  //     a++ 
+  //   }
+  // }
 
   if (this.time.now > 190000) {
     this.players.getChildren().forEach((player) => {
@@ -921,6 +922,21 @@ function removePlayer(self, playerId) {
 
 
 }
+
+function resetPlatforms() {
+  self.floor.enableBody(true, 595, 775).setGravityY(-200).setImmovable(true)
+  self.ceiling.enableBody(true, 600, 25).setGravityY(-200).setImmovable(true)
+  self.centerPlatform.enableBody(true, 600, 375).setAlpha(1).setGravityY(-200).setImmovable(true)
+  self.floor.visible = true
+  self.ceiling.visible = true
+  self.centerPlatform.visible = true
+  io.emit('updatePlatforms')
+}
+
+// this.floor = this.physics.add.image(595, 775, 'floor').setDepth(1).setGravityY(-200).setImmovable(true)
+// this.ceiling = this.physics.add.image(600, 25, 'ceiling').setDepth(1).setGravityY(-200).setImmovable(true)
+// this.centerPlatform = this.physics.add.image(600, 375, 'platform').setDepth(1).setAlpha(1).setGravityY(-200).setImmovable(true)
+
 
 const game = new Phaser.Game(config);
 window.gameLoaded();

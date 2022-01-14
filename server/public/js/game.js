@@ -361,7 +361,7 @@ function create() {
   })
 
   this.socket.on('centerPlatformDestroy', function (centerPlatform) {
-    self.centerPlatform.destroy()
+    self.centerPlatform.visible = false
   })
 
   this.socket.on('ceilingFall', function (ceiling) {
@@ -373,7 +373,7 @@ function create() {
   })
 
   this.socket.on('ceilingDestroy', function (ceiling) {
-    self.ceiling.destroy()
+    self.ceiling.visible = false
   })
 
   this.socket.on('floorFall', function (floor) {
@@ -385,7 +385,7 @@ function create() {
   })
 
   this.socket.on('floorDestroy', function (floor) {
-    self.floor.destroy()
+    self.floor.visible = false
   })
 
   this.socket.on('dangerScreenPlay', function (dangerScreen) {
@@ -405,7 +405,16 @@ function create() {
   })
 
   this.socket.on('dangerScreenDisable', function (dangerScreen) {
-    self.dangerScreen.destroy()
+    self.dangerScreen.disableBody()
+  })
+
+  this.socket.on('updatePlatforms', function () {
+    self.floor.enableBody(true, 595, 775).setGravityY(-200).setImmovable(true)
+    self.ceiling.enableBody(true, 600, 25).setGravityY(-200).setImmovable(true)
+    self.centerPlatform.enableBody(true, 600, 375).setAlpha(1).setGravityY(-200).setImmovable(true)
+    self.floor.visible = true
+    self.ceiling.visible = true
+    self.centerPlatform.visible = true
   })
 
 
@@ -565,10 +574,10 @@ function create() {
     self.ceiling = self.physics.add.image(ceilingValues.x, ceilingValues.y, 'ceiling').setGravityY(-200).setImmovable(true);
   })
   this.socket.on('centerPlatformLocation',function (centerPlatformValues) {
-    self.centerPlatform = self.add.image(centerPlatformValues.x, centerPlatformValues.y, 'platform').setAlpha(centerPlatformValues.alpha);
+    self.centerPlatform = self.physics.add.staticImage(centerPlatformValues.x, centerPlatformValues.y, 'platform').setAlpha(centerPlatformValues.alpha);
   })
   this.socket.on('dangerScreen',function (dangerScreenValues) {
-    self.dangerScreen = self.add.image(dangerScreenValues.x, dangerScreenValues.y, 'danger_screen').setAlpha(0).setDepth(6)
+    self.dangerScreen = self.physics.add.staticImage(dangerScreenValues.x, dangerScreenValues.y, 'danger_screen').setAlpha(0).setDepth(6)
   })
 
   // client controls /////////////////////////////////////////////////////////////////
@@ -627,7 +636,7 @@ function create() {
 
 function update() { 
 
-  if (this.players.getLength() > 2 && this.returnTimer == 0) {
+  if (this.players.getLength() > 1 && this.returnTimer == 0) {
     this.timer -= 0.02
     this.waitingLobbyText.text = 'Game starting in... ' + this.timer.toFixed(1)
     if (this.timer < 0) {
