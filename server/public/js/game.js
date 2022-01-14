@@ -33,8 +33,8 @@ function preload() {
 
   this.load.image('star', 'assets/star_gold.png');
 
-  this.load.image('background', 'assets/background.PNG')
-  this.load.image('background2', 'assets/background2.PNG')
+  this.load.image('background', 'assets/background.png')
+  this.load.image('background2', 'assets/background2.png')
 
   // danger
   this.load.image('danger_screen', 'assets/danger.png')
