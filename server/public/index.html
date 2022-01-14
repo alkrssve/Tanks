@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>Tanks Royale</title>
+        <link rel="icon" href="assets/RoyaleLogo.PNG"></link>
+        <style>
+            canvas {
+                border: 5px solid rgb(94, 89, 255);
+                border-radius: 25px;
+                display : block; 
+                margin: auto;
+            }
+            .wrap {
+                padding-top: 75px;
+            }
+            body {
+                background-repeat:no-repeat;
+                background-position:top left;
+                background-attachment:fixed;
+            }
+            h2{
+                width: 240px;
+                position: absolute;
+                top: -15px;
+                left: 480px;
+                font-size:15px;
+                font-family:Arial, sans-serif;
+                color:#ffffff;
+
+            }
+            .topimage {
+                position: absolute;
+                top: 5px;
+                left: 400px;
+            }
+            .tipsNum {
+                position: absolute;
+                top: -25px;
+                left: 1550px;
+                font-size: 30px;
+                font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                color:#ffffff;
+                line-height:700%;
+            }
+            .tips {
+                width: 300px;
+                position: absolute;
+                top: 140px;
+                left: 1580px;
+                font-size: 20px;
+                font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                color:#ffffff;
+ 
+            }
+            .controlsNum {
+                width: 300px;
+                position: absolute;
+                top: -25px;
+                left: 315px;
+                font-size: 30px;
+                font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                color:#ffffff;
+                line-height:700%;
+            }
+            .controls {
+                width: 300px;
+                position: absolute;
+                top: 100px;
+                left: 20px;
+                font-size: 20px;
+                font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                color:#ffffff;
+            }
+        </style>
+    </head>
+    <body style="position:relative; background-color:#1e1542;">
+        <div class="topimage"><img src="assets/TopWebIcon.PNG", width="60", height="60"></div>
+        <h2>Welcome to the Tanks Royale Beta! Please report any bugs found to the Tanks Royale channel in Discord.</h2>
+        <div class="tipsNum">
+            <ul>
+                <li>Tip #1</li>
+                <li>Tip #2</li>
+                <li>Tip #3</li>
+                <li>Tip #4</li>
+            </ul>
+        </div>
+        <div class="tips">
+            You can have up to 200HP at one time, each gravity flip costs 5HP with a maximum of five flips while in the air.<br><br><br><br><br><br>
+            No matter the color of the opponent tank you will take 25HP when hit by their bullets.<br><br><br><br><br><br><br><br>
+            Standard pips provide 1 Ammo, shiny pips provide 25HP, and square pips provide a power up dependent on color ( White = Ammo Pack, Blue = Bullet Effect, Purple = Shield/Health, Yellow = Special).<br><br><br><br>
+            Overtime the arena will start to fall apart creating holes your tank could fall into, after 3 minutes you will lose 2HP per second.
+        </div>
+        <div class="controlsNum">
+            <ul>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+        <div class="controls">
+            Move left and right using arrow key or A and D. <br><br><br><br><br><br><br><br>
+            Flip gravity up using the up or W key, flip gravity down using the down or S key. <br><br><br><br><br><br><br><br>
+            Aim with mouse click to shoot. 
+        </div>
+        <div class="wrap">
+            <div id="canvas">
+                <script src="/socket.io/socket.io.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.1/dist/phaser.min.js"></script>
+                <script src="js/game.js"></script>
+            </div>
+        </div>
+    </body>
+
+</html>
