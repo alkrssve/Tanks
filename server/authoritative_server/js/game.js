@@ -521,6 +521,11 @@ function create() {
       self.gameStarted = true
     }) 
 
+    socket.on('gameEnd', function () {
+      io.emit('gameRestart')
+      self.gameStarted = false
+    })
+
   });
 
   this.tempStart = 0
@@ -532,9 +537,6 @@ function create() {
 
 function update() {
 
-  if (this.players.getLength() == 0 && this.time.now > 15000) {
-    this.scene.restart()
-  }
 
   this.players.getChildren().forEach((player) => {
 

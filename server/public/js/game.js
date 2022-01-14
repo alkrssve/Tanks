@@ -617,6 +617,12 @@ function create() {
     self.gameStarted = true
   })
 
+  this.socket.on('gameRestart', function () {
+    self.lobbyScreen.visible = true
+    self.waitingLobbyText.visible = true
+    self.gameStarted = false
+  })
+
 }
 
 function update() { 
@@ -638,6 +644,9 @@ function update() {
   }
   if (this.gameBegin == true) {
     this.socket.emit('gameStart')
+  }
+  else if (this.gameBegin == false) {
+    this.socket.emit('gameEnd')
   }
 
 
