@@ -154,7 +154,7 @@ function create() {
   this.physics.add.overlap(this.players, this.pips, function (player, pip) {
     pip.disableBody(true, true)
     pip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
-    players[player.playerId].ammo += 1
+    players[player.playerId].ammo += 2
     if (players[player.playerId].health < 195) {
       players[player.playerId].health += 5
       players[player.playerId].scale += 0.003
@@ -338,6 +338,7 @@ function create() {
       players[player.playerId].health -= 25
       players[player.playerId].scale -= 0.015
       players[player.playerId].alpha -= 0.5
+      players[player.playerId].speed += 10
       ball1.disableBody()
       ball1.enableBody(true, players[ball1.playerId].x, players[ball1.playerId].y).setGravity(0, -200)
       ball1.active = false
@@ -392,8 +393,6 @@ function create() {
   this.physics.add.collider(this.wheels, platform3);
 
 
-
-
   io.on('connection', function (socket) {
     console.log('user [' + socket.id + '] connected');
     // create a new player and add it to our players object
@@ -409,7 +408,7 @@ function create() {
       ballColor: '',
       skin: '',
       emitter: null,
-      ammo: 0,
+      ammo: 5,
       health: 100,
       scale: 0.175,
       playerId: socket.id,
@@ -531,6 +530,7 @@ function create() {
     })
 
   });
+
 
   this.time.addEvent({
     delay: 25000,
