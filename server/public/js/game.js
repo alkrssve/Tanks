@@ -191,17 +191,17 @@ function create() {
   this.socket.on('currentPlayers', function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
-        var colorTemp = Math.floor(Math.random()*(3))
+        var colorTemp = players[id].color
         displayPlayers(self, players[id], tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp);
       } else {
-        var colorTemp = Math.floor(Math.random()*(3))
+        var colorTemp = players[id].color
         displayPlayers(self, players[id], tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp);
       }
     });
   });
 
   this.socket.on('newPlayer', function (playerInfo) {
-    var colorTemp = Math.floor(Math.random()*(3))
+    var colorTemp = playerInfo.color
     displayPlayers(self, playerInfo, tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp);
   });
 

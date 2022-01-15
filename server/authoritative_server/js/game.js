@@ -404,6 +404,7 @@ function create() {
       alpha: 1,
       mouseX: 0,
       mouseY: 0,
+      color: Math.floor(Math.random()*(3)),
       tankColor: '',
       ballColor: '',
       skin: '',
@@ -565,10 +566,10 @@ function update() {
     }
 
     if (players[player.playerId].health <= 25) {
-      players[player.playerId].shotSpeed = 250
+      players[player.playerId].shotSpeed = 400
     }
     else {
-      players[player.playerId].shotSpeed = 500
+      players[player.playerId].shotSpeed = 750
     }
 
 
@@ -873,12 +874,11 @@ function handlePlayerInput(self, playerId, input) {
 }
 
 function addPlayer(self, playerInfo) {
-  var colorTemp = Math.floor(Math.random()*(3))
-  const player = self.physics.add.image(playerInfo.x, playerInfo.y, tankStrings[colorTemp]).setScale(0.175).setSize(301, 301, true).setDepth(3);
-  const barrel = self.physics.add.image(playerInfo.x, playerInfo.y, barrelStrings[colorTemp]).setScale(0.175).setSize(301, 301, true).setDepth(2);
-  const wheel = self.physics.add.image(playerInfo.x, playerInfo.y, wheelStrings[colorTemp]).setScale(0.175).setSize(301, 301, true).setDepth(2);
-  const trail = self.add.particles(trailStrings[colorTemp])
-  const ball1 = self.physics.add.sprite(playerInfo.x, playerInfo.y, ballStrings[colorTemp]).setGravityY(-200).setCircle(4)
+  const player = self.physics.add.image(playerInfo.x, playerInfo.y, tankStrings[playerInfo.color]).setScale(0.175).setSize(301, 301, true).setDepth(3);
+  const barrel = self.physics.add.image(playerInfo.x, playerInfo.y, barrelStrings[playerInfo.color]).setScale(0.175).setSize(301, 301, true).setDepth(2);
+  const wheel = self.physics.add.image(playerInfo.x, playerInfo.y, wheelStrings[playerInfo.color]).setScale(0.175).setSize(301, 301, true).setDepth(2);
+  const trail = self.add.particles(trailStrings[playerInfo.color])
+  const ball1 = self.physics.add.sprite(playerInfo.x, playerInfo.y, ballStrings[playerInfo.color]).setGravityY(-200).setCircle(4)
 
   player.emitter = trail.createEmitter({
     speed: 0,
@@ -890,16 +890,21 @@ function addPlayer(self, playerInfo) {
 
   player.emitter.startFollow(player)
 
-  this.tempSprite1 = tankStrings[colorTemp];
-  this.tempSprite2 = ballStrings[colorTemp];
-  player.tankColor = tankStrings[colorTemp];
-  player.ballColor = ballStrings[colorTemp];
-  ball1.ballColor = ballStrings[colorTemp];
+  this.tempSprite1 = tankStrings[playerInfo.color];
+  this.tempSprite2 = ballStrings[playerInfo.color];
+  player.tankColor = tankStrings[playerInfo.color];
+  player.ballColor = ballStrings[playerInfo.color];
+  ball1.ballColor = ballStrings[playerInfo.color];
 
   player.playerId = playerInfo.playerId;
   barrel.playerId = playerInfo.playerId;
   wheel.playerId = playerInfo.playerId;
   ball1.playerId = playerInfo.playerId
+
+  player.color = playerInfo.color;
+  barrel.color = playerInfo.color;
+  wheel.color = playerInfo.color;
+  ball1.color = playerInfo.color;
 
   self.players.add(player);
   self.barrels.add(barrel);
