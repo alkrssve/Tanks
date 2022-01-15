@@ -137,6 +137,7 @@ function create() {
   this.balls3 = this.physics.add.group();
 
   this.gameStarted = false
+  
 
   this.pipRefId = 0
 
@@ -154,6 +155,18 @@ function create() {
     pip.disableBody(true, true)
     pip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
     players[player.playerId].ammo += 1
+    if (players[player.playerId].health < 195) {
+      players[player.playerId].health += 5
+      players[player.playerId].scale += 0.003
+      players[player.playerId].speed -= 2
+    }
+    else if (players[player.playerId].health < 200) {
+      var tempHealth = 200 - players[player.playerId].health
+      var diff = tempHealth/25
+      players[player.playerId].health += tempHealth
+      players[player.playerId].scale += (0.015 * diff)
+      players[player.playerId].speed -= (10 * diff)
+    }
     io.emit('pipReplace', {x: pip.x, y: pip.y, id: pip.id})
     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
     io.to(player.playerId).emit('pipSound')
@@ -196,35 +209,23 @@ function create() {
 
   this.physics.add.overlap(this.players, this.superPip, function (superPip, player) {
     io.to(player.playerId).emit('superPipSound', self.superPipColor)
-    if (self.superPipColor == 0) {
-      players[player.playerId].ammo += 5
+    players[player.playerId].ammo += 5
+    if (players[player.playerId].health < 175) {
+      players[player.playerId].health += 25
+      players[player.playerId].scale += 0.015
+      players[player.playerId].speed -= 10
     }
-    else if (self.superPipColor == 1) {
-
+    else if (players[player.playerId].health < 200) {
+      var tempHealth = 200 - players[player.playerId].health
+      var diff = tempHealth/25
+      players[player.playerId].health += tempHealth
+      players[player.playerId].scale += (0.015 * diff)
+      players[player.playerId].speed -= (10 * diff)
     }
-    else if (self.superPipColor == 2) {
-      if (players[player.playerId].health < 150) {
-        players[player.playerId].health += 50
-        players[player.playerId].scale += (0.015 * 2)
-        players[player.playerId].speed -= (10 * 2)
-      }
-      else if (players[player.playerId].health < 200) {
-          var tempHealth = 200 - players[player.playerId].health
-          var diff = tempHealth/25
-          players[player.playerId].health += tempHealth
-          players[player.playerId].scale += (0.015 * diff)
-          players[player.playerId].speed -= (10 * diff)
-      }
-    }
-    else {
-      
-    }
-    self.superPip.disableBody(true, true)
-    self.superPip.enableBody(true, Phaser.Math.Between(80, 1120), 110)
     self.superPipColor = Math.floor(Math.random()*(4))
-    io.emit('superPipReplace', {x: self.superPip.x, y: self.superPip.y, color: self.superPipColor})
+    io.emit('superPipDisable')
     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
-
+    self.superPip.disableBody(true, true)
   })
 
 // setting
@@ -529,6 +530,16 @@ function create() {
     })
 
   });
+
+  this.time.addEvent({
+    delay: 25000,
+    callback: function () {
+      this.superPip.enableBody(true, Phaser.Math.Between(80, 1120), 110)
+      io.emit('superPipReplace', {x: this.superPip.x, y: this.superPip.y, color: this.superPipColor})
+    },
+    callbackScope: this,
+    loop: true
+  })
 
   this.tempStart = 0
 

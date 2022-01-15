@@ -525,6 +525,7 @@ function create() {
     }
     else {
       self.superPip.disableBody()
+      self.superPip.visible = true
       self.superPip.enableBody(true, pipData.x, pipData.y)
       self.superPip.setScale(0.01).setAlpha(0)
       self.superPip.setTexture(superPipStrings[pipData.color])
@@ -538,7 +539,7 @@ function create() {
   })
 
   this.socket.on('superPipReplace', function (pipData) {
-    self.superPip.disableBody()
+    self.superPip.visible = true
     self.superPip.enableBody(true, pipData.x, pipData.y)
     self.superPip.setScale(0.01).setAlpha(0)
     self.superPip.setTexture(superPipStrings[pipData.color])
@@ -548,6 +549,10 @@ function create() {
       scale: 0.075,
       duration: 500
     })   
+  })
+
+  this.socket.on('superPipDisable', function () {
+    self.superPip.visible = false
   })
 
   this.socket.on('superPipSound', function (color) {
