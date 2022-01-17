@@ -602,6 +602,7 @@ function create() {
   this.rightKeyPressed = false;
   this.upKeyPressed = false;
   this.downKeyPressed = false;
+  this.spaceUp = false
   this.mousex = parseInt(this.mouse.x);
   this.mousey = parseInt(this.mouse.y);
   this.mouseButtonPressed = false;
@@ -637,9 +638,20 @@ function create() {
     self.gameStarted = false
   })
 
+  this.spaceActive = false
+  this.playerConnected = false
+
 }
 
 function update() { 
+
+  if (this.playerConnected == false) {
+    
+  }
+
+  this.socket.on('connectPlayer', function () {
+    self.playerConnected = true
+  })
 
   if (this.players.getLength() > 1 && this.returnTimer == 0) {
     this.timer -= 0.02
@@ -686,6 +698,10 @@ function update() {
   const mouseValX = mouseX + 'x'
   const mouseValY = mouseY + 'y'
 
+  if(Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
+    this.spaceActive = true
+  }
+
   if (this.cursors.left.isDown || this.keys.a.isDown) {
     this.leftKeyPressed = true;
     this.rightKeyPressed = false;
@@ -698,21 +714,25 @@ function update() {
     
   }
 
-  if (this.cursors.up.isDown || this.keys.w.isDown) {
+  if (this.cursors.up.isDown || this.keys.w.isDown || (this.spaceActive && this.spaceUp)) {
+    this.spaceUp = false
     this.gravityDown = true;
     this.upKeyPressed = true;
     this.downKeyPressed = false;
-  } else if (this.cursors.down.isDown || this.keys.s.isDown) {
-    this.gravityDown = true;
+    this.spaceActive = false
+  } else if (this.cursors.down.isDown || this.keys.s.isDown || (this.spaceActive && !this.spaceUp)) {
+    this.spaceUp = true
     this.downKeyPressed = true;
     this.upKeyPressed = false;
+    this.spaceActive = false
   } else {
     this.upKeyPressed = false;
     this.downKeyPressed = false;
   }
 
   if (Phaser.Input.Keyboard.JustDown(this.keys.w) || Phaser.Input.Keyboard.JustDown(this.keys.s)
-  || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
+  || Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.cursors.down)
+  || Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
     this.gravityCounter++
   }
 

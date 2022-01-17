@@ -40,7 +40,7 @@
         </style>
     </head>
     <body style="position:relative; background-color:#1e1542;">
-        <a href="#" class="button">Play</a>
+        <a href="#" class="button", onclick="connectPlayer(this)">Play</a>
         <div class="wrap">
             <div id="canvas">
                 <script src="/socket.io/socket.io.js"></script>
@@ -48,5 +48,13 @@
                 <script src="js/game.js"></script>
             </div>
         </div>
+        <script>
+            var socket = io()
+
+            function connectPlayer (button) {
+                button.style.display = 'none'
+                socket.emit('connectPlayer')
+            }
+        </script>
     </body>
 </html>

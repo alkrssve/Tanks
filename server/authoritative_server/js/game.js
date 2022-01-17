@@ -478,6 +478,7 @@ function create() {
       },
       active: false
     }
+
     // add player to server
     addPlayer(self, players[socket.id]);
     // send the players object to the new player
