@@ -602,7 +602,7 @@ function create() {
   this.rightKeyPressed = false;
   this.upKeyPressed = false;
   this.downKeyPressed = false;
-  this.spaceUp = false
+  this.spaceUp = false;
   this.mousex = parseInt(this.mouse.x);
   this.mousey = parseInt(this.mouse.y);
   this.mouseButtonPressed = false;
@@ -639,15 +639,9 @@ function create() {
   })
 
   this.spaceActive = false
-  this.playerConnected = false
-
 }
 
 function update() { 
-
-  if (this.playerConnected == false) {
-    
-  }
 
   if (this.players.getLength() > 1 && this.returnTimer == 0) {
     this.timer -= 0.02
