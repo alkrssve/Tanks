@@ -649,10 +649,6 @@ function update() {
     
   }
 
-  this.socket.on('connectPlayer', function () {
-    self.playerConnected = true
-  })
-
   if (this.players.getLength() > 1 && this.returnTimer == 0) {
     this.timer -= 0.02
     this.waitingLobbyText.text = 'Game starting in... ' + this.timer.toFixed(1)
@@ -722,6 +718,7 @@ function update() {
     this.spaceActive = false
   } else if (this.cursors.down.isDown || this.keys.s.isDown || (this.spaceActive && !this.spaceUp)) {
     this.spaceUp = true
+    this.gravityDown = true;
     this.downKeyPressed = true;
     this.upKeyPressed = false;
     this.spaceActive = false
