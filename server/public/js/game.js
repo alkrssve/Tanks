@@ -21,6 +21,7 @@ var game = new Phaser.Game(config);
 
 const tankStrings = ['blue_tank','purple_tank','yellow_tank'];
 const wheelStrings = ['blue_move_right','purple_move_right','yellow_move_right'];
+const wheelAnimStrings = ['blue_wheel_right','purple_wheel_right','yellow_wheel_right']
 const barrelStrings = ['blue_barrel','purple_barrel','yellow_barrel'];
 const trailStrings = ['blue_trail','purple_trail','yellow_trail'];
 const ballStrings = ['blue_ball','purple_ball','yellow_ball'];
@@ -137,8 +138,30 @@ function create() {
 
   this.gameStarted = false
 
-  this.c1 = Phaser.Display.Color.HexStringToColor('#ffffff');
-  this.c2 = Phaser.Display.Color.HexStringToColor('#ff0000');
+  // Animations: 
+
+  const moveRightB = this.anims.create({
+    key: 'blue_wheel_right',
+    frames: this.anims.generateFrameNumbers('blue_move_right'),
+    frameRate: 10,
+    repeat: -1
+  })
+
+  const moveRightP = this.anims.create({
+    key: 'purple_wheel_right',
+    frames: this.anims.generateFrameNumbers('purple_move_right'),
+    frameRate: 10,
+    repeat: -1
+  })
+
+  const moveRightY = this.anims.create({
+    key: 'yellow_wheel_right',
+    frames: this.anims.generateFrameNumbers('yellow_move_right'),
+    frameRate: 10,
+    repeat: -1
+  })
+
+
 
   this.playerIcon
   this.ammoIcon
@@ -333,7 +356,6 @@ function create() {
       })
     });
   });
-
 
   this.socket.on('healthAmmoUpdate', function (ammo, health, playId) {
     self.players.getChildren().forEach(function (player) {

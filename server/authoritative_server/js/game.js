@@ -153,6 +153,7 @@ function create() {
   }
 
   this.physics.add.overlap(this.players, this.pips, function (player, pip) {
+    io.to(pip.playerId).emit('pipSound')
     pip.disableBody(true, true)
     pip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
     players[player.playerId].ammo += 2
@@ -170,7 +171,6 @@ function create() {
     }
     io.emit('pipReplace', {x: pip.x, y: pip.y, id: pip.id})
     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
-    io.to(player.playerId).emit('pipSound')
   })
 
 // shiny pips
@@ -180,6 +180,7 @@ function create() {
   this.shinyPip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
 
   this.physics.add.overlap(this.players, this.shinyPip, function (shinyPip, player) {
+    io.to(player.playerId).emit('shinyPipSound')
     self.shinyPip.disableBody(true, true)
     self.shinyPip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
     if (players[player.playerId].health < 175) {
@@ -197,7 +198,6 @@ function create() {
     players[player.playerId].ammo += 1
     io.emit('shinyPipReplace', {x: self.shinyPip.x, y: self.shinyPip.y})
     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
-    io.to(player.playerId).emit('pipSound')
   })
 
 // super pips
