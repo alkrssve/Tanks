@@ -153,7 +153,7 @@ function create() {
   }
 
   this.physics.add.overlap(this.players, this.pips, function (player, pip) {
-    io.to(players[player.playerId].playerId).emit('pipSound')
+    io.to(player.playerId).emit('pipSound')
     pip.disableBody(true, true)
     pip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
     players[player.playerId].ammo += 2
