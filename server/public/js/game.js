@@ -24,6 +24,7 @@ const wheelStrings = ['blue_move_right','purple_move_right','yellow_move_right']
 const barrelStrings = ['blue_barrel','purple_barrel','yellow_barrel'];
 const trailStrings = ['blue_trail','purple_trail','yellow_trail'];
 const ballStrings = ['blue_ball','purple_ball','yellow_ball'];
+const ammoStrings = ['blue_ammo','purple_ammo','yellow_ammo'];
 const pipStrings = ['blue_pip','purple_pip','yellow_pip'];
 const shinyPipStrings = ['blue_shinypip','purple_shinypip','yellow_shinypip'];
 const superPipStrings = ['super_pip','blue_super_pip','purple_super_pip','yellow_super_pip'];
@@ -75,6 +76,10 @@ function preload() {
   this.load.image('blue_ball','assets/blue_ball.png')
   this.load.image('purple_ball','assets/purple_ball.png')
   this.load.image('yellow_ball','assets/yellow_ball.png')
+
+  this.load.image('blue_ammo','assets/blueammo.png')
+  this.load.image('purple_ammo','assets/purpleammo.png')
+  this.load.image('yellow_ammo','assets/yellowammo.png')
 
   // tank bodies
   this.load.image('blue_tank', 'assets/base-cyan.png')
@@ -155,7 +160,7 @@ function create() {
   // setting sprites/images
   const bg = this.add.image(500,300, 'background').setScale(1)
   this.lobbyScreen = this.physics.add.staticImage(500,300, 'background').setScale(1).setDepth(9)
-  this.scrollClouds = this.add.sprite(100, -500, 'background2')
+  this.scrollClouds = this.add.sprite(100, -500, 'background2').setAlpha(0.7)
   this.scrollRate = 0.15
 
   const boundMarkerBottom = this.add.sprite(600, 705, 'bound_marker').setScale(1.5).setDepth(0)
@@ -192,17 +197,17 @@ function create() {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
         var colorTemp = players[id].color
-        displayPlayers(self, players[id], tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp);
+        displayPlayers(self, players[id], tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp, ammoStrings[colorTemp]);
       } else {
         var colorTemp = players[id].color
-        displayPlayers(self, players[id], tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp);
+        displayPlayers(self, players[id], tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp, ammoStrings[colorTemp]);
       }
     });
   });
 
   this.socket.on('newPlayer', function (playerInfo) {
     var colorTemp = playerInfo.color
-    displayPlayers(self, playerInfo, tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp);
+    displayPlayers(self, playerInfo, tankStrings[colorTemp], barrelStrings[colorTemp], wheelStrings[colorTemp], ballStrings[colorTemp], trailStrings[colorTemp], colorTemp, ammoStrings[colorTemp]);
   });
 
   this.socket.on('disconnect', function (playerId) {
@@ -227,7 +232,11 @@ function create() {
         ball1.destroy();
       }
     });
-
+    self.balls2.getChildren().forEach(function (ball2) {
+      if (playerId === ball2.playerId) {
+        ball2.destroy();
+      }
+    });
   });
 
   this.socket.on('playerDestroy', function (playerId) {
@@ -252,9 +261,14 @@ function create() {
         ball1.destroy();
       }
     });
+    self.balls2.getChildren().forEach(function (ball2) {
+      if (playerId === ball2.playerId) {
+        ball2.destroy();
+      }
+    });
   })
 
-  this.socket.on('playerUpdates', function (players, barrels, wheels, balls1) {
+  this.socket.on('playerUpdates', function (players, barrels, wheels, balls1, balls2) {
     Object.keys(players).forEach(function (id) {
       self.players.getChildren().forEach(function (player) {
         if (players[id].playerId === player.playerId) {
@@ -309,7 +323,17 @@ function create() {
         }
       })
     });
+    Object.keys(balls2).forEach(function (id) {
+      self.balls2.getChildren().forEach(function (ball2) {
+        if (balls2[id].playerId === ball2.playerId) {
+          ball2.setPosition(balls2[id].x, balls2[id].y);
+          ball2.mouseX = balls2[id].mouseX;
+          ball2.mouseY = balls2[id].mouseY;
+        }
+      })
+    });
   });
+
 
   this.socket.on('healthAmmoUpdate', function (ammo, health, playId) {
     self.players.getChildren().forEach(function (player) {
@@ -318,11 +342,15 @@ function create() {
         self.currentAmmoText.setText(ammo)
         if(ammo > 99) {
           self.currentAmmoText.setX(30)
-          self.ammoIcon.setX(69)
+          self.ammoIcon.setX(75)
         }
         else if(ammo > 9) {
           self.currentAmmoText.setX(25)
-          self.ammoIcon.setX(55)
+          self.ammoIcon.setX(60)
+        }
+        else if(ammo < 10) {
+          self.currentAmmoText.setX(25)
+          self.ammoIcon.setX(50)
         }
 
       }
@@ -333,7 +361,19 @@ function create() {
     self.players.getChildren().forEach(function (player) {
       if (player.playerId == playId) {
         self.playerIcon = self.add.sprite(1170, 770, player.tankColor).setScale(0.15).setDepth(3);
-        self.ammoIcon = self.add.image(50, 28, player.ballColor).setDepth(3);
+        self.ammoIcon = self.add.image(50, 28, player.ammoColor).setScale(0.25).setDepth(3);
+      }
+    })
+  })
+
+  this.socket.on('iconUpdate', function (playId) {
+    self.players.getChildren().forEach(function (player) {
+      if (player.playerId == playId) {
+        if (player.health <= 25) {
+          self.playerIcon.setTexture(lowHealthStrings[player.color]).setScale(0.125).setPosition(1170, 772)
+        } else {
+          self.playerIcon.setTexture(player.tankColor).setScale(0.15).setPosition(1170, 770)
+        }
       }
     })
   })
@@ -603,12 +643,15 @@ function create() {
   this.upKeyPressed = false;
   this.downKeyPressed = false;
   this.spaceUp = false;
+  this.spaceActive = false;
   this.mousex = parseInt(this.mouse.x);
   this.mousey = parseInt(this.mouse.y);
   this.mouseButtonPressed = false;
   this.gravityDown = false
   this.gravityCounter = 0;
   
+  this.canShoot = true;
+
   var FKey = this.input.keyboard.addKey('F')
 
   FKey.on('down', function () {
@@ -638,7 +681,15 @@ function create() {
     self.gameStarted = false
   })
 
-  this.spaceActive = false
+  this.time.addEvent({
+    delay: 400,
+    callback: function () {
+      this.canShoot = true
+    },
+    callbackScope: this,
+    loop: true
+  })
+
 }
 
 function update() { 
@@ -684,13 +735,12 @@ function update() {
   const mouseY = this.mousey;
   const mouseButton = this.mouseButtonPressed;
   const gravDown = this.gravityDown;
+  const spacePressed = this.spaceActive;
+  const spaceType = this.spaceUp;
+  const shootNow = this.canShoot;
 
   const mouseValX = mouseX + 'x'
   const mouseValY = mouseY + 'y'
-
-  if(Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
-    this.spaceActive = true
-  }
 
   if (this.cursors.left.isDown || this.keys.a.isDown) {
     this.leftKeyPressed = true;
@@ -704,21 +754,32 @@ function update() {
     
   }
 
-  if (this.cursors.up.isDown || this.keys.w.isDown || (this.spaceActive && this.spaceUp)) {
-    this.spaceUp = false
+  if (this.cursors.up.isDown || this.keys.w.isDown) {
     this.gravityDown = true;
     this.upKeyPressed = true;
     this.downKeyPressed = false;
-    this.spaceActive = false
-  } else if (this.cursors.down.isDown || this.keys.s.isDown || (this.spaceActive && !this.spaceUp)) {
-    this.spaceUp = true
+  } else if (this.cursors.down.isDown || this.keys.s.isDown) {
     this.gravityDown = true;
     this.downKeyPressed = true;
     this.upKeyPressed = false;
-    this.spaceActive = false
   } else {
     this.upKeyPressed = false;
     this.downKeyPressed = false;
+  }
+
+  if (Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
+    if (this.spaceUp) {
+      this.gravityDown = true;
+      this.spaceUp = false;
+      this.spaceActive = true;
+    }
+    else if (!this.spaceUp) {
+      this.gravityDown = true;
+      this.spaceUp = true;
+      this.spaceActive = true;
+    }
+  } else if (this.cursors.space.isUp) {
+    this.spaceActive = false;
   }
 
   if (Phaser.Input.Keyboard.JustDown(this.keys.w) || Phaser.Input.Keyboard.JustDown(this.keys.s)
@@ -727,29 +788,35 @@ function update() {
     this.gravityCounter++
   }
 
-  if (this.mouse.isDown) {
+  if (this.mouse.isDown && this.canShoot) {
     this.mouseButtonPressed = true;
+    this.canShoot = false;
   } else {
     this.mouseButtonPressed = false;
   }
+
 
   if (this.mouse.x > 0 || this.mouse.y > 0) {
     this.mousex = parseInt(this.mouse.x)
     this.mousey = parseInt(this.mouse.y)
   }
 
-  if (left !== this.leftKeyPressed || right !== this.rightKeyPressed || up !== this.upKeyPressed || down !== this.downKeyPressed || mouseX != this.mousex || mouseY != this.mousey || mouseButton != this.mouseButtonPressed || gravDown != this.gravityDown) {
-    this.socket.emit('playerInput', { left: this.leftKeyPressed , right: this.rightKeyPressed, up: this.upKeyPressed, down: this.downKeyPressed, mouseX: this.mousex, mouseY: this.mousey, mouseButton: this.mouseButtonPressed, gravDown: this.gravityDown });
+  if (left !== this.leftKeyPressed || right !== this.rightKeyPressed || up !== this.upKeyPressed || down !== this.downKeyPressed || 
+                                      mouseX != this.mousex || mouseY != this.mousey || mouseButton != this.mouseButtonPressed || 
+                                      gravDown != this.gravityDown || spacePressed != this.spaceActive || spaceType != this.spaceUp || shootNow != this.canShoot) {
+    this.socket.emit('playerInput', { left: this.leftKeyPressed , right: this.rightKeyPressed, up: this.upKeyPressed, down: this.downKeyPressed, 
+                                      mouseX: this.mousex, mouseY: this.mousey, mouseButton: this.mouseButtonPressed, gravDown: this.gravityDown, 
+                                      spacePressed: this.spaceActive, spaceType: this.spaceUp, shootNow: this.canShoot});
   }
-
 }
 
-function displayPlayers(self, playerInfo, sprite1, sprite2, sprite3, ballColor, trailColor, color) {
+function displayPlayers(self, playerInfo, sprite1, sprite2, sprite3, ballColor, trailColor, color, ammoColor) {
   const player = self.add.sprite(playerInfo.x, playerInfo.y, sprite1).setScale(0.175).setSize(301, 301, true).setDepth(3).setAlpha(1);
   const barrel = self.add.sprite(playerInfo.x, playerInfo.y, sprite2).setScale(0.175).setSize(301, 301, true).setDepth(2).setAlpha(1);
   const wheel = self.add.sprite(playerInfo.x, playerInfo.y, sprite3).setScale(0.175).setSize(301, 301, true).setDepth(2).setAlpha(1);
   const trail = self.add.particles(trailColor)
   const ball1 = self.add.sprite(playerInfo.x, playerInfo.y, ballColor)
+  const ball2 = self.add.sprite(playerInfo.x, playerInfo.y, ballColor)
 
   player.emitter = trail.createEmitter({
     speed: 0,
@@ -763,18 +830,22 @@ function displayPlayers(self, playerInfo, sprite1, sprite2, sprite3, ballColor, 
 
   player.tankColor = sprite1;
   player.ballColor = ballColor;
+  player.ammoColor = ammoColor;
   player.color = color;
   ball1.ballColor = ballColor;
+  ball2.ballColor = ballColor;
 
   player.playerId = playerInfo.playerId;
   barrel.playerId = playerInfo.playerId;
   wheel.playerId = playerInfo.playerId;
-  ball1.playerId = playerInfo.playerId
+  ball1.playerId = playerInfo.playerId;
+  ball2.playerId = playerInfo.playerId;
 
   self.players.add(player);
   self.barrels.add(barrel);
   self.wheels.add(wheel);
   self.balls1.add(ball1);
+  self.balls2.add(ball2);
 
 }
 

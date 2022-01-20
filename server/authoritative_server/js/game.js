@@ -2,6 +2,7 @@ const players = {};
 const barrels = {};
 const wheels = {};
 const balls1 = {};
+const balls2 = {};
 
 const config = {
   type: Phaser.HEADLESS,
@@ -32,8 +33,6 @@ const pipStrings = ['blue_pip','purple_pip','yellow_pip'];
 const shinyPipStrings = ['blue_shinypip','purple_shinypip','yellow_shinypip'];
 const superPipStrings = ['super_pip','blue_super_pip','purple_super_pip','yellow_super_pip'];
 
-var tempSprite1 = ''
-var tempSprite2 = ''
 
 function preload() {
 
@@ -138,7 +137,9 @@ function create() {
 
   this.gameStarted = false
   
+  this.playerSpawn = 250
 
+  // pips
   this.pipRefId = 0
 
   if (this.pips.getLength() < 8) {
@@ -306,7 +307,7 @@ function create() {
   })
 
 
-  ///////
+  /////// ball 1 overlaps
 
   this.physics.add.overlap(this.floor, this.balls1, function (floor, ball1) {
     ball1.disableBody()
@@ -347,6 +348,49 @@ function create() {
       io.to(ball1.playerId).emit('pipSound')
     }
   })
+
+  /////// ball 2 overlaps
+
+  this.physics.add.overlap(this.floor, this.balls2, function (floor, ball2) {
+    ball2.disableBody()
+    ball2.enableBody(true, players[ball2.playerId].x, players[ball2.playerId].y).setGravity(0, -200)
+    ball2.active = false
+    io.emit('returnBall', {x: ball2.x, y: ball2.y, id: ball2.playerId})
+  })
+  this.physics.add.overlap(this.ceiling, this.balls2, function (ceiling, ball2) {
+    ball2.disableBody()
+    ball2.enableBody(true, players[ball2.playerId].x, players[ball2.playerId].y).setGravity(0, -200)
+    ball2.active = false
+    io.emit('returnBall', {x: ball2.x, y: ball2.y, id: ball2.playerId})
+  })
+  this.physics.add.overlap(this.centerPlatform, this.balls2, function (centerPlatform, ball2) {
+    ball2.disableBody()
+    ball2.enableBody(true, players[ball2.playerId].x, players[ball2.playerId].y).setGravity(0, -200)
+    ball2.active = false
+    io.emit('returnBall', {x: ball2.x, y: ball2.y, id: ball2.playerId})
+  })
+  this.physics.add.overlap(this.platforms, this.balls2, function (platform, ball2) {
+    ball2.disableBody()
+    ball2.enableBody(true, players[ball2.playerId].x, players[ball2.playerId].y).setGravity(0, -200)
+    ball2.active = false
+    io.emit('returnBall', {x: ball2.x, y: ball2.y, id: ball2.playerId})
+  })
+
+  this.physics.add.overlap(this.players, this.balls2, function (player, ball2) {
+    if (players[player.playerId].playerId != balls2[ball2.playerId].playerId) {
+      players[player.playerId].health -= 25
+      players[player.playerId].scale -= 0.015
+      players[player.playerId].alpha -= 0.5
+      players[player.playerId].speed += 10
+      ball2.disableBody()
+      ball2.enableBody(true, players[ball2.playerId].x, players[ball2.playerId].y).setGravity(0, -200)
+      ball2.active = false
+      io.emit('damaged', players[player.playerId].playerId)
+      io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
+      io.to(ball2.playerId).emit('pipSound')
+    }
+  })
+
 
 
 
@@ -398,7 +442,7 @@ function create() {
     // create a new player and add it to our players object
     players[socket.id] = {
       rotation: 0,
-      x: Math.floor(Math.random() * 1100) + 100,
+      x: self.playerSpawn,
       y: 660,
       alpha: 1,
       mouseX: 0,
@@ -408,13 +452,14 @@ function create() {
       ballColor: '',
       skin: '',
       emitter: null,
+      bullets: {},
       ammo: 5,
       health: 100,
       scale: 0.175,
       playerId: socket.id,
       flipX: false,
       flipY: false,
-      speed: 200,
+      speed: 250,
       shotSpeed: 500,
       speedPower: false,
       shotPower: false, 
@@ -478,6 +523,23 @@ function create() {
       },
       active: false
     }
+    balls2[socket.id] = {
+      x: null,
+      y: null,
+      ballColor: '',
+      mouseX: null,
+      mouseY: null,
+      playerId: socket.id,
+      input: {
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+        mouseButton: false
+      },
+      active: false,
+      secondFire: false
+    }
     // add player to server
     addPlayer(self, players[socket.id]);
     // send the players object to the new player
@@ -528,7 +590,11 @@ function create() {
       self.time.now = 0
       self.resetPlatforms()
     })
-
+    if (self.playerSpawn < 1000) {
+      self.playerSpawn += 250
+    } else {
+      self.playerSpawn = 250
+    }
   });
 
 
@@ -544,9 +610,6 @@ function create() {
 
   this.tempStart = 0
 
-  const playerIcon = self.add.sprite(1170, 770, this.tempSprite1).setScale(0.15).setDepth(3);
-  const ammoIcon = self.add.sprite(50, 28, this.tempSprite2).setDepth(3)
-
 }
 
 function update() {
@@ -554,6 +617,8 @@ function update() {
   this.players.getChildren().forEach((player) => {
 
     if (players[player.playerId].health <= 0) {
+      players[player.playerId].health = 0
+      io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
       removePlayer(this, players[player.playerId].playerId)
       io.emit('playerDestroy', players[player.playerId].playerId);
     }
@@ -567,9 +632,12 @@ function update() {
 
     if (players[player.playerId].health <= 25) {
       players[player.playerId].shotSpeed = 400
+      io.to(players[player.playerId].playerId).emit('iconUpdate', players[player.playerId].playerId)
     }
     else {
       players[player.playerId].shotSpeed = 750
+      io.to(players[player.playerId].playerId).emit('iconUpdate', players[player.playerId].playerId)
+
     }
 
 
@@ -714,8 +782,8 @@ function update() {
       players[player.playerId].gravityCounter += 5
     }
 
-    if (this.gameStarted == true && input.up && input.gravDown && players[player.playerId].gravityCounter < 6) {
-      player.setGravityY(-650)
+    if (this.gameStarted == true && (input.up || (input.spacePressed && input.spaceType)) && input.gravDown && players[player.playerId].gravityCounter < 6) {
+      player.setGravityY(-750)
       if (!touchingFloor && !touchingCeil && !player.flipY) {
         players[player.playerId].gravityCounter++
         players[player.playerId].health -= 5
@@ -727,8 +795,8 @@ function update() {
       }
       player.flipY = true
     } 
-    else if (this.gameStarted == true && input.down && input.gravDown && players[player.playerId].gravityCounter < 6) {
-      player.setGravityY(650)
+    else if (this.gameStarted == true && (input.down || (input.spacePressed && !input.spaceType)) && input.gravDown && players[player.playerId].gravityCounter < 6) {
+      player.setGravityY(750)
       if (!touchingFloor && !touchingCeil && player.flipY) {
         players[player.playerId].gravityCounter++
         players[player.playerId].health -= 5
@@ -770,14 +838,14 @@ function update() {
     }
 
     if (input.up) {
-      barrel.setGravityY(-650)
+      barrel.setGravityY(-750)
     } else if (input.down) {
-      barrel.setGravityY(650)
+      barrel.setGravityY(750)
     } else {
       barrel.setAcceleration(0);
     }
     if (this.gameStarted == true) {
-      barrels[barrel.playerId].rotation = Phaser.Math.Angle.Between(barrel.x,barrel.y,input.mouseX,input.mouseY) + Math.PI/2
+      barrels[barrel.playerId].rotation = Phaser.Math.Angle.Between(players[barrel.playerId].x,players[barrel.playerId].y,input.mouseX,input.mouseY) + Math.PI/2
     }
     barrels[barrel.playerId].scale = players[barrel.playerId].scale
     barrels[barrel.playerId].x = players[barrel.playerId].x
@@ -801,10 +869,10 @@ function update() {
     }
 
     if (input.up) {
-      wheel.setGravityY(-650)
+      wheel.setGravityY(-750)
       wheel.flipY = true
     } else if (input.down) {
-      wheel.setGravityY(650)
+      wheel.setGravityY(750)
       wheel.flipY = false
     } else {
       wheel.setAcceleration(0);
@@ -822,8 +890,8 @@ function update() {
   this.balls1.getChildren().forEach((ball1) => {
 
     const input = balls1[ball1.playerId].input;
-    
-    if (this.gameStarted == true && input.mouseButton && !ball1.active && players[ball1.playerId].ammo > 0) {
+    io.to(players[ball1.playerId].playerId).emit('healthAmmoUpdate', players[ball1.playerId].ammo, players[ball1.playerId].health , players[ball1.playerId].playerId)
+    if (this.gameStarted == true && input.mouseButton && !ball1.active && players[ball1.playerId].ammo > 0 && !input.shootNow) {
       ball1.enableBody()
       ball1.setGravityY(300)
       this.physics.moveTo(ball1, input.mouseX, input.mouseY, players[ball1.playerId].shotSpeed)
@@ -845,8 +913,35 @@ function update() {
     balls1[ball1.playerId].mouseY = input.mouseY;
 
   });
+  this.balls2.getChildren().forEach((ball2) => {
 
-  io.emit('playerUpdates', players, barrels, wheels, balls1);
+    // const input = balls2[ball2.playerId].input;
+    // io.to(players[ball2.playerId].playerId).emit('healthAmmoUpdate', players[ball2.playerId].ammo, players[ball2.playerId].health , players[ball2.playerId].playerId)
+    // if (this.gameStarted == true && input.mouseButton && !ball2.active && players[ball2.playerId].ammo > 0 && balls2[ball2.playerId].secondFire) {
+    //   ball2.secondFire = false;
+    //   ball2.enableBody()
+    //   ball2.setGravityY(300)
+    //   this.physics.moveTo(ball2, input.mouseX, input.mouseY, players[ball2.playerId].shotSpeed)
+    //   ball2.active = true
+    //   players[ball2.playerId].ammo--
+    //   io.to(players[ball2.playerId].playerId).emit('healthAmmoUpdate', players[ball2.playerId].ammo, players[ball2.playerId].health , players[ball2.playerId].playerId)
+    //   io.to(players[ball2.playerId].playerId).emit('shotSound')
+
+    // } 
+    if (ball2.active == false) {
+      ball2.disableBody()
+      ball2.setX(players[ball2.playerId].x)
+      ball2.setY(players[ball2.playerId].y)
+    }
+
+    // balls2[ball2.playerId].x = ball2.x
+    // balls2[ball2.playerId].y = ball2.y
+    // balls2[ball2.playerId].mouseX = input.mouseX;
+    // balls2[ball2.playerId].mouseY = input.mouseY;
+
+  });
+
+  io.emit('playerUpdates', players, barrels, wheels, balls1, balls2);
 
 }
 
@@ -871,6 +966,11 @@ function handlePlayerInput(self, playerId, input) {
       balls1[ball1.playerId].input = input;
     }
   });
+  self.balls2.getChildren().forEach((ball2) => {
+    if (playerId === ball2.playerId) {
+      balls2[ball2.playerId].input = input;
+    }
+  });
 }
 
 function addPlayer(self, playerInfo) {
@@ -879,6 +979,7 @@ function addPlayer(self, playerInfo) {
   const wheel = self.physics.add.image(playerInfo.x, playerInfo.y, wheelStrings[playerInfo.color]).setScale(0.175).setSize(301, 301, true).setDepth(2);
   const trail = self.add.particles(trailStrings[playerInfo.color])
   const ball1 = self.physics.add.sprite(playerInfo.x, playerInfo.y, ballStrings[playerInfo.color]).setGravityY(-200).setCircle(4)
+  const ball2 = self.physics.add.sprite(playerInfo.x, playerInfo.y, ballStrings[playerInfo.color]).setGravityY(-200).setCircle(4)
 
   player.emitter = trail.createEmitter({
     speed: 0,
@@ -890,26 +991,29 @@ function addPlayer(self, playerInfo) {
 
   player.emitter.startFollow(player)
 
-  this.tempSprite1 = tankStrings[playerInfo.color];
-  this.tempSprite2 = ballStrings[playerInfo.color];
   player.tankColor = tankStrings[playerInfo.color];
   player.ballColor = ballStrings[playerInfo.color];
   ball1.ballColor = ballStrings[playerInfo.color];
+  ball2.ballColor = ballStrings[playerInfo.color];
+
 
   player.playerId = playerInfo.playerId;
   barrel.playerId = playerInfo.playerId;
   wheel.playerId = playerInfo.playerId;
-  ball1.playerId = playerInfo.playerId
+  ball1.playerId = playerInfo.playerId;
+  ball2.playerId = playerInfo.playerId;
 
   player.color = playerInfo.color;
   barrel.color = playerInfo.color;
   wheel.color = playerInfo.color;
   ball1.color = playerInfo.color;
+  ball2.color = playerInfo.color;
 
   self.players.add(player);
   self.barrels.add(barrel);
   self.wheels.add(wheel);
-  self.balls1.add(ball1)
+  self.balls1.add(ball1);
+  self.balls2.add(ball2);
 
 }
 
@@ -933,6 +1037,11 @@ function removePlayer(self, playerId) {
   self.balls1.getChildren().forEach((ball1) => {
     if (playerId === ball1.playerId) {
       ball1.destroy();
+    }
+  });
+  self.balls2.getChildren().forEach((ball2) => {
+    if (playerId === ball2.playerId) {
+      ball2.destroy();
     }
   });
 
