@@ -153,7 +153,6 @@ function create() {
   }
 
   this.physics.add.overlap(this.players, this.pips, function (player, pip) {
-    io.to(player.playerId).emit('pipSound')
     pip.disableBody(true, true)
     pip.enableBody(true, Phaser.Math.Between(80, 1120), Phaser.Math.Between(315, 685))
     players[player.playerId].ammo += 2
@@ -171,6 +170,7 @@ function create() {
     }
     io.emit('pipReplace', {x: pip.x, y: pip.y, id: pip.id})
     io.to(player.playerId).emit('healthAmmoUpdate', players[player.playerId].ammo, players[player.playerId].health , players[player.playerId].playerId)
+    io.to(player.playerId).emit('pipSound')
   })
 
 // shiny pips
