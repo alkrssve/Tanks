@@ -514,7 +514,6 @@ function create() {
   this.socket.on('pipReplace', function (pipData) {
     self.pips.getChildren().forEach(function (pip) {
       if (pip.id == pipData.id) {
-        self.pipCollected.play()
         pip.disableBody()
         pip.enableBody(true, pipData.x, pipData.y)
         pip.setScale(0.01).setAlpha(0)
